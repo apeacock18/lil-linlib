@@ -25,6 +25,7 @@ public:
 	Matrix operator+(Matrix m);
 	Matrix operator-(Matrix m);
 	Matrix operator*(Matrix m);
+	Matrix scalar_mult(double x);
 
 	Matrix inverse();
 	Matrix transpose();
@@ -33,11 +34,15 @@ public:
 	int get_rows();
 	int get_cols();
 	vector<vector<double>> get_entries();
-	void set_entries(int m, int n, double val);
+	void set_entries(vector<vector<double>> entries);
+	void set_entry(int r, int c, double val);
 
 	// Utility
 	void print();
 };
+
+double find_determinate(Matrix m, int n);
+Matrix cofactor(Matrix m);
 
 class IdentityMatrix : public Matrix
 {

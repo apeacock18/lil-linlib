@@ -13,9 +13,8 @@ Matrix::Matrix(int rows, int cols)
 {
 	this->rows = rows;
 	this->cols = cols;
-	entries.resize(rows);
-	for (int i = 0; i < rows; ++i)
-		entries[i].resize(cols);
+	std::vector<std::vector<double>> e1(rows, std::vector<double>(cols, 0));
+	entries = e1;
 }
 
 int Matrix::get_rows()
@@ -33,14 +32,19 @@ vector<vector<double>> Matrix::get_entries()
 	return entries;
 }
 
-void Matrix::set_entries(int m, int n, double val)
+void Matrix::set_entries(vector<vector<double>> entries)
 {
-	entries[m][n] = val;
+	this->entries = entries;
+}
+
+void Matrix::set_entry(int r, int c, double val)
+{
+	entries[r][c] = val;
 }
 
 void Matrix::print()
 {
-	std::cout << "-------------";
+	std::cout << "--------------------";
 	for (int i = 0; i < rows; i++)
 	{
 		std::cout << std::endl;
@@ -50,7 +54,7 @@ void Matrix::print()
 			std::cout << std::setw(5) << std::setfill(' ') << std::setprecision(2) << entries[i][j];
 		}
 	}
-	std::cout << "\n-------------" << std::endl;
+	std::cout << "\n-------------------" << std::endl;
 }
 
 IdentityMatrix::IdentityMatrix(int size)
