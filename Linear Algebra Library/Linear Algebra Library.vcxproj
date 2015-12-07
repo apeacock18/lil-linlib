@@ -142,9 +142,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="matrix.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="graphics.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="matrix operations.cpp" />
     <ClCompile Include="matrix.cpp" />

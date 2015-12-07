@@ -55,8 +55,11 @@ Matrix Matrix::operator-(Matrix m)
 Matrix Matrix::operator*(Matrix m)
 {
 	Matrix temp_m(rows, cols);
-	if (rows != m.get_rows() || cols != m.cols)
+	if (cols != m.rows) {
+		std::cout << "poop" << std::endl;
 		return temp_m;
+	}
+
 	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < m.cols; j++)
@@ -68,6 +71,11 @@ Matrix Matrix::operator*(Matrix m)
 	return temp_m;
 }
 
+//Matrix Matrix::operator=(Matrix m)
+//{
+//	return Matrix(entries, rows, cols);
+//}
+
 Matrix Matrix::scalar_mult(double x)
 {
 	Matrix temp_m = *this;
@@ -77,113 +85,112 @@ Matrix Matrix::scalar_mult(double x)
 	return temp_m;
 }
 
+void Matrix::add_row(double arr[])
+{
+	vector<double> temp;
+	for (int i = 0; i < cols; i++)
+		temp.push_back(arr[i]);
+	entries.push_back(temp);
+	rows++;
+}
+
+void Matrix::add_row()
+{
+	vector<double> temp;
+	for (int i = 0; i < cols; i++)
+		temp.push_back(1.0);
+	entries.push_back(temp);
+	rows++;
+}
+
 Matrix Matrix::transpose()
 {
 	if (rows != cols)
 		return Matrix(rows, cols);
-	vector< vector<double> > transpose;
 
-	for (int i = 0; i < rows; i++)
-	{
-		vector<double> temp;
-		for (int j = 0; j < cols; j++)
-			temp.push_back(entries[j][i]);
-		transpose.push_back(temp);
+	vector<vector<double>> transpose;
+
+	for (int i = 0; i < rows; i++) {
+		row.clear();
+		for (int j = 0; j < cols; j++) {
+			row.push_back(entries[j][i]);
+		}
+		transpose.push_back(row);
 	}
-
 	return Matrix(transpose, rows, cols);
 }
 
 // Method: cofactor expansion across first row
-double find_determinate(Matrix A, int n)
+double Matrix::find_determinate()
 {
 	
-	if (A.get_rows() != A.get_cols())
-		return NULL;
+	if (rows != cols)
+		return NAN;
 
-	int size = A.get_rows();
-
-	vector<vector<double>> a = A.get_entries();
 	double det = 0;
 
-	if (size == 2)
-	{
-		return a[0][0] * a[1][1] - a[0][1] * a[1][0];
-	}
+	if (rows == 2)
+		return entries[0][0] * entries[1][1] - entries[0][1] * entries[1][0];
 
-	for (int j = 0; j < size; j++)
-	{
+	for (int j = 0; j < rows; j++) {
 		int sign;
 		vector<vector<double>> row_e;
 		vector<double> col_e;
 
-		for (int i1 = 1; i1 < size; i1++)
-		{
-			col_e = a[i1];
+		for (int i = 1; i < rows; i++) {
+			col_e = entries[i];
 			col_e.erase(col_e.begin() + j);
 			row_e.push_back(col_e);
 		}
 
-		Matrix B(row_e, size - 1, size - 1);
-		if (n % 2)
-		{
-			if (j % 2)
-				sign = 1;
-			else
-				sign = -1;
-		}
+		Matrix B(row_e, rows - 1, rows - 1);
+
+		if (j % 2)
+			det -= entries[0][j] * B.find_determinate();
 		else
-		{
-			if (j % 2)
-				sign = -1;
-			else
-				sign = 1;
-		}
-		det += sign * a[0][j] * find_determinate(B, n + 1);
+			det += entries[0][j] * B.find_determinate();
 	}
 	return det;
 }
 
-Matrix cofactor(Matrix A)
+Matrix Matrix::cofactor()
 {
-	if (A.get_rows() != A.get_cols())
+	if (rows != cols)
 		return Matrix();
 
-	int size = A.get_rows();
-	Matrix C(size, size);
-	vector<vector<double>> c = C.get_entries();
-	vector<vector<double>> a = A.get_entries();
 	double det = 0;
-	int k = 0;
+	vector<vector<double>> c;
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < rows; i++)
 	{
-		for (int j = 0; j < size; j++)
+		vector<double> c_row;
+		for (int j = 0; j < rows; j++)
 		{
 			int sign;
 			vector<vector<double>> row_e;
 			vector<double> col_e;
 
-			for (int i1 = 0; i1 < size; i1++)
+			for (int i1 = 0; i1 < rows; i1++)
 			{
-				if (i1 == i)
-					continue;
-				col_e = a[i1];
+				if (i1 == i) continue;
+				col_e = entries[i1];
 				col_e.erase(col_e.begin() + j);
 				row_e.push_back(col_e);
 			}
 
-			Matrix B(row_e, size - 1, size - 1);
-			det = find_determinate(B, 0);
+			Matrix B(row_e, rows - 1, rows - 1);
+			det = B.find_determinate();
 
 			if (j % 2)
 				sign = -1;
 			else
 				sign = 1;
-			c[i][j] = pow(-1, i + j + 2.0) * det;
+
+			c_row.push_back(pow(-1, i + j + 2.0) * det);
 		}
+		c.push_back(c_row);
 	}
-	C.set_entries(c);
+	Matrix C(c, rows, cols);
 	return C;
 }
 
@@ -192,14 +199,12 @@ Matrix Matrix::inverse()
 	if (rows != cols)
 		return Matrix();
 	int size = rows;
-	double determinate = find_determinate(*this, 0);
-	Matrix A = cofactor(*this);
-	A.print();
-	A = A.transpose();
-
+	double determinate = find_determinate();
 	if (determinate == 0)
 		return Matrix();
 
+	Matrix A = cofactor();
+	A = A.transpose();
 	A = A.scalar_mult(1.0 / determinate);
 
 	return A;
